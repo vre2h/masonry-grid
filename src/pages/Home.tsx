@@ -9,7 +9,7 @@ const Home: React.FC = () => {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState(""); // Initial search query
   const [debouncedQuery, setDebouncedQuery] = useState(query); // Debounced query
-  const { photos, loading, error, total } = usePhotos(debouncedQuery, page, 10);
+  const { photos, loading, error, total } = usePhotos(debouncedQuery, page, 20);
   const navigate = useNavigate();
 
   // Debounce query changes
