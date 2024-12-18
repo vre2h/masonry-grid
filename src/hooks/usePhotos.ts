@@ -6,6 +6,7 @@ export const usePhotos = (query: string, page: number, perPage: number) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const loadPhotos = async () => {
@@ -14,7 +15,11 @@ export const usePhotos = (query: string, page: number, perPage: number) => {
 
       try {
         const data = await fetchPhotos(query, page, perPage);
-        setPhotos((prev) => [...prev, ...data.photos]);
+        // If the query changes, reset the photos array
+        setPhotos((prev) =>
+          page === 1 ? data.photos : [...prev, ...data.photos]
+        );
+        setTotal(data.total_results);
       } catch (err: unknown) {
         // @TODO: add logger
         console.error(err);
@@ -27,5 +32,5 @@ export const usePhotos = (query: string, page: number, perPage: number) => {
     loadPhotos();
   }, [query, page, perPage]);
 
-  return { photos, loading, error };
+  return { photos, loading, error, total };
 };
