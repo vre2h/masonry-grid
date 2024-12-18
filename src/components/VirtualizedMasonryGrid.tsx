@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import styled from "styled-components";
 import { Photo } from "../types/Photo";
 import { debounce } from "../utils/debounce";
 import MasonryGrid from "./MasonryGrid";
@@ -21,45 +22,75 @@ const VirtualizedMasonryGrid: React.FC<VirtualizedMasonryGridProps> = ({
   const [endIndex, setEndIndex] = useState(40); // Initial number of items to show
   const incrementStep = 50; // Number of items to add on each scroll event
 
-  // Debounced handleScroll function
-  const handleScroll = debounce(() => {
-    const scrollTop = window.scrollY;
-    const clientHeight = window.innerHeight;
-    const scrollHeight = document.body.scrollHeight;
+  // Debounced handleScroll function (memoized to prevent re-creation)
+  const handleScroll = useCallback(
+    debounce(() => {
+      const scrollTop = window.scrollY;
+      const clientHeight = window.innerHeight;
+      const scrollHeight = document.body.scrollHeight;
 
-    // Check if the user has scrolled near the bottom
-    if (scrollTop + clientHeight >= scrollHeight - 200) {
-      // Add more items
-      setEndIndex((prevEndIndex) =>
-        Math.min(prevEndIndex + incrementStep, photos.length)
-      );
-    }
-  }, 100); // Adjust debounce delay (100ms in this case)
+      // Check if the user has scrolled near the bottom
+      if (scrollTop + clientHeight >= scrollHeight - 200) {
+        // Add more items
+        setEndIndex((prevEndIndex) =>
+          Math.min(prevEndIndex + incrementStep, photos.length)
+        );
+      }
+    }, 100), // Adjust debounce delay (100ms in this case)
+    [photos.length]
+  );
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [photos.length, handleScroll]);
+  }, [handleScroll]);
 
-  // Slice the visible items
+  useEffect(() => {
+    setEndIndex((prevEndIndex) => {
+      return Math.min(prevEndIndex + incrementStep, photos.length);
+    });
+  }, [photos.length]);
+
+  // Memoized visible photos to avoid recalculations
   const visiblePhotos = useMemo(
     () => photos.slice(0, endIndex),
     [endIndex, photos]
   );
 
-  const handleLoadMore = () => {
+  // Memoized onLoadMore handler
+  const handleLoadMore = useCallback(() => {
     onLoadMore();
-    setEndIndex((prevEndIndex) => Math.min(prevEndIndex + incrementStep));
-  };
+  }, [onLoadMore, photos.length]);
 
   return (
-    // @TODO: move this to styled
-    <div>
+    <Container>
       <MasonryGrid photos={visiblePhotos} onPhotoClick={onPhotoClick} />
       {loading && <p>Loading...</p>}
-      {showLoadMore && <button onClick={handleLoadMore}>Load More</button>}
-    </div>
+      {showLoadMore && (
+        <LoadMoreButton onClick={handleLoadMore}>Load More</LoadMoreButton>
+      )}
+    </Container>
   );
 };
+
+// Styled Components
+const Container = styled.div`
+  padding: 16px;
+`;
+
+const LoadMoreButton = styled.button`
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
 
 export default VirtualizedMasonryGrid;

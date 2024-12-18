@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Photo } from "../types/Photo";
 
@@ -8,17 +8,33 @@ interface PhotoDetailProps {
 }
 
 const PhotoDetail: React.FC<PhotoDetailProps> = ({ photo, onBack }) => {
+  // Memoize the back button click handler
+  const handleBackClick = useCallback(() => {
+    onBack();
+  }, [onBack]);
+
+  // Memoize optimized photo details to avoid recalculations
+  const photoDetails = useMemo(
+    () => ({
+      src: `${photo.src.large}?w=800&h=600&fit=crop`, // Resize the image for optimization
+      alt: photo.alt || "Photo",
+      photographer: photo.photographer,
+      dateTaken: photo.date_taken || "Unknown",
+    }),
+    [photo]
+  );
+
   return (
     <DetailContainer>
-      <BackButton onClick={onBack}>Back</BackButton>
-      <PhotoImage src={photo.src.large} alt={photo.alt || "Photo"} />
+      <BackButton onClick={handleBackClick}>Back</BackButton>
+      <PhotoImage src={photoDetails.src} alt={photoDetails.alt} />
       <PhotoInfo>
-        <h2>{photo.alt || "Untitled"}</h2>
+        <h2>{photoDetails.alt || "Untitled"}</h2>
         <p>
-          <strong>Photographer:</strong> {photo.photographer}
+          <strong>Photographer:</strong> {photoDetails.photographer}
         </p>
         <p>
-          <strong>Date Taken:</strong> {photo.date_taken || "Unknown"}
+          <strong>Date Taken:</strong> {photoDetails.dateTaken}
         </p>
       </PhotoInfo>
     </DetailContainer>
