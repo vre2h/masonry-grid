@@ -1,5 +1,7 @@
 # Masonry Photo Grid Application
 
+[App URL — https://masonry-grid-iota.vercel.app/](https://masonry-grid-iota.vercel.app/)
+
 This is a **Masonry Photo Grid Application** built with React, TypeScript, and Vite. It implements a virtualized masonry grid layout for efficient rendering of large datasets, a photo detail view, and a search feature with debounced API calls.
 
 ## Features
