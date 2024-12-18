@@ -23,18 +23,41 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ photos, onPhotoClick }) => {
 };
 
 const GridContainer = styled.div`
+  --masonry-gap: 1rem;
+  --masonry-brick-width: 180px;
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 16px;
+  gap: var(--masonry-gap);
+
+  @supports (grid-template-rows: masonry) {
+    /* Modern Masonry Grid Support */
+    grid-template-rows: masonry;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--masonry-brick-width), 1fr)
+    );
+  }
+
+  @supports not (grid-template-rows: masonry) {
+    /* Fallback for Masonry if not supported */
+    column-width: var(--masonry-brick-width);
+    column-gap: var(--masonry-gap);
+    display: block; /* Behaves as a flexbox fallback */
+  }
+
+  & > * {
+    /* Consistent spacing for child elements */
+    margin-bottom: var(--masonry-gap);
+  }
 `;
 
 const PhotoItem = styled.img`
   width: 100%;
   height: auto;
   cursor: pointer;
-  border-radius: 8px;
   transition: transform 0.3s ease;
+
+  color: white;
 
   &:hover {
     transform: scale(1.05);
